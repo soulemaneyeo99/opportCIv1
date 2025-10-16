@@ -1,0 +1,4 @@
+
+# Force learning app si pas déjà présente
+if 'apps.learning.apps.LearningConfig' not in INSTALLED_APPS:
+    INSTALLED_APPS = list(INSTALLED_APPS) + ['apps.learning.apps.LearningConfig']

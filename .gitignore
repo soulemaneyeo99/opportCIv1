@@ -1,0 +1,149 @@
+# ============================
+# 🌍 GLOBAL / OS FILES
+# ============================
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.bak
+*.pyc
+__pycache__/
+.cache/
+.env
+.env.local
+.env.*.local
+.idea/
+.vscode/
+*.sqlite3
+
+# ============================
+# 🐍 BACKEND (Django)
+# ============================
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Django files
+*.py[cod]
+db.sqlite3
+media/
+staticfiles/
+static/
+local_settings.py
+
+# Migrations cache
+**/migrations/__pycache__/
+**/migrations/*.pyc
+# (Optionnel) — garde les migrations vides
+# **/migrations/*.py
+
+# Logs & coverage
+*.log
+coverage/
+htmlcov/
+*.coverage
+*.cover
+nosetests.xml
+*.mo
+*.pot
+
+# ============================
+# ⚛️ FRONTEND (Next.js / React)
+# ============================
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+pnpm-lock.yaml
+
+# Build output
+.next/
+out/
+dist/
+build/
+
+# Local dev files
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Lint and test
+coverage/
+.eslintcache
+.stylelintcache
+jest-cache/
+jest-test-results.json
+cypress/screenshots/
+cypress/videos/
+
+# ============================
+# 🧱 PROJECT SPECIFIC
+# ============================
+# Backend configs
+backend/__pycache__/
+backend/media/
+backend/staticfiles/
+backend/.mypy_cache/
+backend/.pytest_cache/
+backend/.ruff_cache/
+
+# Frontend configs
+frontend/.next/
+frontend/.turbo/
+frontend/.vercel/
+frontend/public/build/
+frontend/.eslintcache
+
+# ============================
+# 🧰 TOOLS & UTILITIES
+# ============================
+# Python tools
+.pytest_cache/
+mypy_cache/
+ruff_cache/
+celerybeat-schedule
+celerybeat.pid
+
+# IDEs
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+
+# ============================
+# 🚀 DEPLOYMENT / CI
+# ============================
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# PyInstaller
+*.manifest
+*.spec
+
+# VSCode / JetBrains
+.vscode/
+.idea/
+
+# ============================
+# 📦 ENVIRONNEMENT & SÉCURITÉ
+# ============================
+# Secrets & API keys
+*.pem
+*.key
+*.crt
+*.env
+*.secret
+secrets.json
+
+# ============================
+# 🧪 TESTS / TEMP
+# ============================
+tmp/
+temp/
+tests/__pycache__/
+tests/*.pyc
