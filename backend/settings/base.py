@@ -37,6 +37,7 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 # Application definition
 DJANGO_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -149,7 +150,8 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [env('REDIS_URL', default='redis://localhost:6379/0')],
+            "hosts": [('redis', 6379)],  # Docker
+            # "hosts": [('127.0.0.1', 6379)],  # Local
         },
     },
 }
@@ -343,3 +345,5 @@ OPPORTUNCI_SETTINGS = {
         'premium_simulations': 2,
     },
 }
+
+ASGI_APPLICATION = 'config.asgi.application'
