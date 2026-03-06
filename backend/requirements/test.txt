@@ -1,0 +1,20 @@
+# OpportuCI - Test Requirements
+-r base.txt
+
+# Testing
+pytest>=8.0.0
+pytest-django>=4.8.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.23.0
+pytest-xdist>=3.5.0
+
+# Factories
+factory-boy>=3.3.0
+faker>=22.0.0
+
+# Mocking
+responses>=0.25.0
+freezegun>=1.4.0
+
+# Code coverage
+coverage>=7.4.0

@@ -1,12 +1,21 @@
-# opportunities/urls.py
+"""
+OpportuCI - Opportunities API URLs
+===================================
+"""
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import OpportunityViewSet, OpportunityCategoryViewSet, UserOpportunityViewSet
+from .views import (
+    OpportunityViewSet,
+    OpportunityCategoryViewSet,
+    OpportunitySourceViewSet,
+    ApplicationTrackerViewSet
+)
 
 router = DefaultRouter()
-router.register(r'categories', OpportunityCategoryViewSet)
-router.register(r'', OpportunityViewSet)
-router.register(r'user-relations', UserOpportunityViewSet, basename='user-opportunity')
+router.register(r'categories', OpportunityCategoryViewSet, basename='category')
+router.register(r'sources', OpportunitySourceViewSet, basename='source')
+router.register(r'applications', ApplicationTrackerViewSet, basename='application')
+router.register(r'', OpportunityViewSet, basename='opportunity')
 
 urlpatterns = [
     path('', include(router.urls)),

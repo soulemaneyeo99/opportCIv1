@@ -60,13 +60,9 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'apps.accounts.apps.AccountsConfig',
     'apps.opportunities.apps.OpportunitiesConfig',
-    'apps.learning.apps.LearningConfig',
-    'apps.simulations.apps.SimulationsConfig',
-    'apps.analytics.apps.AnalyticsConfig',
+    'apps.prep.apps.PrepConfig',
     'apps.ai.apps.AiConfig',
-    'apps.credibility.apps.CredibilityConfig',
     'apps.notifications.apps.NotificationsConfig',
-    'apps.content.apps.ContentConfig',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -133,16 +129,13 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-# settings/base.py ou celeryconfig.py
+# Celery Beat Schedule
+# TODO: Add back scheduled tasks as needed
 CELERY_BEAT_SCHEDULE = {
-    'send-learning-reminders': {
-        'task': 'apps.learning.tasks.send_learning_reminders',
-        'schedule': crontab(hour=9, minute=0),  # Tous les jours à 9h
-    },
-    'cleanup-old-ai-feedback': {
-        'task': 'apps.learning.tasks.cleanup_old_ai_feedback',
-        'schedule': crontab(day_of_week=1, hour=2, minute=0),  # Lundi 2h
-    },
+    # 'check-opportunity-deadlines': {
+    #     'task': 'apps.opportunities.tasks.check_deadlines',
+    #     'schedule': crontab(hour=8, minute=0),
+    # },
 }
 
 # Channels Configuration (WebSocket)

@@ -1,90 +1,80 @@
+"""
+OpportuCI - Account Serializers
+================================
+"""
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from django.core.validators import MinLengthValidator, RegexValidator, FileExtensionValidator
+from django.core.validators import FileExtensionValidator
 from django.utils.translation import gettext_lazy as _
-from ..models import UserProfile, validate_file_size
+from ..models import Profile, validate_file_size
 
 User = get_user_model()
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    skills = serializers.SerializerMethodField()
-    interests = serializers.SerializerMethodField()
-    languages = serializers.SerializerMethodField()
-    certifications = serializers.SerializerMethodField()
+class ProfileSerializer(serializers.ModelSerializer):
+    """Serializer pour le profil utilisateur"""
 
     class Meta:
-        model = UserProfile
+        model = Profile
         fields = [
-            'bio', 'skills', 'interests', 'languages', 'certifications',
-            'cv', 'linkedin_profile', 'github_profile', 'portfolio_website',
-            'availability_status', 'created_at', 'updated_at'
+            'city', 'education_level', 'field_of_study', 'institution',
+            'graduation_year', 'skills', 'interests', 'languages',
+            'cv', 'linkedin_url', 'portfolio_url', 'bio',
+            'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
 
-    def get_skills(self, obj):
-        return [skill.strip() for skill in obj.skills.split(',') if skill.strip()] if obj.skills else []
 
-    def get_interests(self, obj):
-        return [interest.strip() for interest in obj.interests.split(',') if interest.strip()] if obj.interests else []
-
-    def get_languages(self, obj):
-        return [lang.strip() for lang in obj.languages.split(',') if lang.strip()] if obj.languages else []
-
-    def get_certifications(self, obj):
-        return [cert.strip() for cert in obj.certifications.split(',') if cert.strip()] if obj.certifications else []
-
-    def to_internal_value(self, data):
-        # Convertit les listes en chaînes pour stockage
-        for field in ['skills', 'interests', 'languages', 'certifications']:
-            if isinstance(data.get(field), list):
-                data[field] = ', '.join([item.strip() for item in data[field] if item.strip()])
-        return super().to_internal_value(data)
-
-
-class UserDetailSerializer(serializers.ModelSerializer):
-    profile = UserProfileSerializer(read_only=True)
-    user_type_display = serializers.CharField(source='get_user_type_display', read_only=True)
-    education_level_display = serializers.CharField(source='get_education_level_display', read_only=True)
+class UserSerializer(serializers.ModelSerializer):
+    """Serializer de base pour User"""
+    profile = ProfileSerializer(read_only=True)
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
 
     class Meta:
         model = User
         fields = [
-            'id', 'email', 'username', 'user_type', 'user_type_display',
-            'first_name', 'last_name', 'phone_number', 'profile_picture',
-            'city', 'country', 'education_level', 'education_level_display',
-            'institution', 'field_of_study', 'is_verified', 'profile',
+            'id', 'email', 'first_name', 'last_name', 'full_name',
+            'user_type', 'phone_number', 'profile_picture',
+            'is_verified', 'profile', 'created_at'
+        ]
+        read_only_fields = ['id', 'is_verified', 'created_at']
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    """Serializer détaillé pour User avec profil"""
+    profile = ProfileSerializer(read_only=True)
+    user_type_display = serializers.CharField(source='get_user_type_display', read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'email', 'first_name', 'last_name',
+            'user_type', 'user_type_display',
+            'phone_number', 'profile_picture',
+            'is_verified', 'profile',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'is_verified', 'created_at', 'updated_at']
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
-    profile = UserProfileSerializer(required=False)
+    """Serializer pour la création de compte"""
     confirm_password = serializers.CharField(write_only=True, required=True)
     terms = serializers.BooleanField(write_only=True, required=True)
 
     class Meta:
         model = User
         fields = [
-            'email', 'username', 'password', 'confirm_password', 'user_type',
-            'first_name', 'last_name', 'phone_number', 'city', 'country',
-            'education_level', 'institution', 'field_of_study', 'profile',
-            'terms'
+            'email', 'password', 'confirm_password',
+            'first_name', 'last_name', 'user_type',
+            'phone_number', 'terms'
         ]
         extra_kwargs = {
-            'password': {'write_only': True},
+            'password': {'write_only': True, 'min_length': 8},
             'email': {'required': True},
             'first_name': {'required': True},
             'last_name': {'required': True},
         }
-
-    def validate_username(self, value):
-        if not value.replace('_', '').replace('.', '').isalnum():
-            raise serializers.ValidationError(
-                _("Le nom d'utilisateur ne peut contenir que des lettres, chiffres, _ ou .")
-            )
-        return value
 
     def validate(self, data):
         if data['password'] != data['confirm_password']:
@@ -97,69 +87,42 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 'terms': _("Vous devez accepter les conditions d'utilisation.")
             })
 
-        if data.get('user_type') == User.UserType.STUDENT:
-            if not data.get('education_level'):
-                raise serializers.ValidationError({
-                    'education_level': _("Le niveau d'éducation est requis pour les étudiants.")
-                })
-            if not data.get('institution'):
-                raise serializers.ValidationError({
-                    'institution': _("L'établissement d'enseignement est requis pour les étudiants.")
-                })
-
         return data
 
     def create(self, validated_data):
-        profile_data = validated_data.pop('profile', {})
         validated_data.pop('terms', None)
         validated_data.pop('confirm_password', None)
 
         user = User.objects.create_user(
             email=validated_data.pop('email'),
-            username=validated_data.pop('username'),
             password=validated_data.pop('password'),
             **validated_data
         )
-
-        if profile_data:
-            profile_serializer = UserProfileSerializer(
-                instance=user.profile,
-                data=profile_data,
-                partial=True
-            )
-            profile_serializer.is_valid(raise_exception=True)
-            profile_serializer.save()
-
         return user
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
+    """Serializer pour la mise à jour du compte"""
+
     class Meta:
         model = User
-        fields = [
-            'email', 'username', 'first_name', 'last_name',
-            'phone_number', 'city', 'country', 'education_level',
-            'institution', 'field_of_study'
-        ]
-        extra_kwargs = {
-            'email': {'read_only': True},
-            'username': {'read_only': True},
-        }
+        fields = ['first_name', 'last_name', 'phone_number']
 
-    def validate(self, data):
-        if self.instance.user_type == User.UserType.STUDENT:
-            if 'education_level' in data and not data['education_level']:
-                raise serializers.ValidationError({
-                    'education_level': _("Le niveau d'éducation est requis pour les étudiants.")
-                })
-            if 'institution' in data and not data['institution']:
-                raise serializers.ValidationError({
-                    'institution': _("L'établissement d'enseignement est requis pour les étudiants.")
-                })
-        return data
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    """Serializer pour la mise à jour du profil"""
+
+    class Meta:
+        model = Profile
+        fields = [
+            'city', 'education_level', 'field_of_study', 'institution',
+            'graduation_year', 'skills', 'interests', 'languages',
+            'linkedin_url', 'portfolio_url', 'bio'
+        ]
 
 
 class ProfilePictureUploadSerializer(serializers.Serializer):
+    """Serializer pour l'upload de photo de profil"""
     profile_picture = serializers.ImageField(
         required=True,
         validators=[
@@ -169,7 +132,19 @@ class ProfilePictureUploadSerializer(serializers.Serializer):
     )
 
 
+class CVUploadSerializer(serializers.Serializer):
+    """Serializer pour l'upload de CV"""
+    cv = serializers.FileField(
+        required=True,
+        validators=[
+            FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx']),
+            validate_file_size
+        ]
+    )
+
+
 class UserLoginSerializer(serializers.Serializer):
+    """Serializer pour la connexion"""
     email = serializers.EmailField(required=True)
     password = serializers.CharField(
         required=True,
@@ -189,23 +164,21 @@ class UserLoginSerializer(serializers.Serializer):
 
         user = User.objects.filter(email=email).first()
 
-        if not user:
+        if not user or not user.check_password(password):
             raise serializers.ValidationError(
-                _("Identifiants invalides. Veuillez réessayer."),
+                _("Identifiants invalides."),
                 code='invalid_credentials'
             )
 
-        if not user.check_password(password):
+        if not user.is_active:
             raise serializers.ValidationError(
-                _("Identifiants invalides. Veuillez réessayer."),
-                code='invalid_credentials'
-            )
-
-        if not user.is_verified:
-            raise serializers.ValidationError(
-                _("Votre compte n'est pas encore vérifié. Veuillez vérifier votre email."),
-                code='account_unverified'
+                _("Ce compte est désactivé."),
+                code='account_disabled'
             )
 
         attrs['user'] = user
         return attrs
+
+
+# Backward compatibility aliases
+UserProfileSerializer = ProfileSerializer
